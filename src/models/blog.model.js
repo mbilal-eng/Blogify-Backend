@@ -1,6 +1,4 @@
 import mongoose from "mongoose"
-import { type } from "os";
-import { ref } from "process";
 
 const blogSchema = new mongoose.Schema({
     author: {
@@ -39,7 +37,7 @@ const blogSchema = new mongoose.Schema({
         ref: "User"
     }],
     likesCount: {
-        type: Integer,
+        type: Number,
         default: 0
     },
     comments: [

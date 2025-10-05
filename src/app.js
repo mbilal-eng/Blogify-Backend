@@ -3,6 +3,7 @@ import authRouter from "./routes/auth.route.js";
 import dotenv from "dotenv";
 import { connectDB } from "./config/db.js";
 import userRouter from "./routes/user.route.js";
+import blogRouter from "./routes/blog.route.js";
 
 // Load env variables
 dotenv.config();
@@ -19,6 +20,7 @@ app.use(express.json()) // accpet request body data
 // URL Routes
 app.use("/api/v1/auth", authRouter)
 app.use("/api/v1/user", userRouter)
+app.use("/api/v1/blog", blogRouter)
 
 // Server Testing APi
 app.get("/test", (req, res) => {
