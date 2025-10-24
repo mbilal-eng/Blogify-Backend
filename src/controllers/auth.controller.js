@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
-import { errorResponse, successResponse } from "../utils/responseHandler.js"
+import { errorResponse, successResponse } from "../utils/responseHandler.js";
+import { generateToken } from "../middleware/auth.middleware.js";
 
 export const registerUser = async (req, res) => {
     try {
@@ -24,14 +25,20 @@ export const registerUser = async (req, res) => {
 
         const newUser = await User.create({ name, email, password, phone, bio, city, avatar, website, social });
 
-        return successResponse(res, "User Register Succefully", newUser, 201)
+        // Generate JWT token
+        const token = generateToken(newUser._id);
+
+        return successResponse(res, "User Register Successfully", {
+            user: newUser,
+            token
+        }, 201)
     } catch (error) {
         console.log("ERROR:", error)
         return errorResponse(res, "something went wrong", error, 500)
     }
 }
 
-export const lgoinUser = async (req, res) => {
+export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body
 
@@ -41,16 +48,25 @@ export const lgoinUser = async (req, res) => {
 
         const existingUser = await User.findOne({ email }).select("+password");
         if (!existingUser) {
-            return errorResponse(res, "User Not Found", {}, 404)
+            return errorResponse(res, "Invalid Credentials", {}, 401)
         }
 
-        console.log(password, existingUser)
-        // verify password
-        if (existingUser.password !== password) {
-            return errorResponse(res, "Invalid Credentials")
+        // Verify password using bcrypt
+        const isPasswordValid = await existingUser.comparePassword(password);
+        if (!isPasswordValid) {
+            return errorResponse(res, "Invalid Credentials", {}, 401)
         }
 
-        return successResponse(res, "Login Successfull", existingUser, 200)
+        // Generate JWT token
+        const token = generateToken(existingUser._id);
+
+        // Remove password from response
+        const userWithoutPassword = await User.findById(existingUser._id).select("-password");
+
+        return successResponse(res, "Login Successful", {
+            user: userWithoutPassword,
+            token
+        }, 200)
     } catch (error) {
         console.log("ERROR:", error)
         return errorResponse(res, "something went wrong", error, 500)

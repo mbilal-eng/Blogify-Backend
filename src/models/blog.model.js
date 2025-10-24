@@ -58,6 +58,16 @@ const blogSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+// Method to check if a user has liked this blog
+blogSchema.methods.isLikedBy = function(userId) {
+    return this.likes.includes(userId);
+};
+
+// Pre-save middleware to ensure likesCount is always in sync
+blogSchema.pre('save', function(next) {
+    this.likesCount = this.likes.length;
+    next();
+});
 
 const Blog = mongoose.model("blog", blogSchema)
 
